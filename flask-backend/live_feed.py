@@ -10,15 +10,14 @@ FLASK_API_URL = "http://127.0.0.1:5001/ml/predict"
 FETCH_INTERVAL = 300  # 5 minutes (300 seconds)
 REQUEST_DELAY = 5  # 5 seconds between requests
 
-# Disaster keywords to search for in India
+# Updated Disaster keywords strictly for India
 DISASTER_KEYWORDS = [
     "Flood India",
     "Earthquake India",
     "Landslide India",
-    "Fire India",
     "Cyclone India",
-    "Tsunami India",
-    "Drought India"
+    "Fire accident India",
+    "Building collapse India"
 ]
 
 # In-memory set to track seen articles (prevents duplicates in same session)
@@ -26,8 +25,9 @@ seen_links = set()
 
 
 def get_google_news_rss_url(query):
-    """Constructs Google News RSS URL for a given query."""
+    """Constructs Google News RSS URL for a given query, targeting India."""
     base_url = "https://news.google.com/rss/search"
+    # Added gl=IN and ceid=IN:en to force India-specific results
     params = f"?q={query.replace(' ', '+')}&hl=en-IN&gl=IN&ceid=IN:en"
     return base_url + params
 
@@ -85,6 +85,10 @@ def process_articles():
             # Skip if we've already seen this article
             if link in seen_links:
                 continue
+
+            # Optional: Strict filtering (commented out to avoid false negatives like "Mumbai Floods")
+            # if "India" not in title and "State" not in title:
+            #     continue
             
             # Mark as seen
             seen_links.add(link)
@@ -110,7 +114,7 @@ def process_articles():
 def main():
     """Main loop - runs continuously."""
     print("=" * 80)
-    print("DISASTER NEWS LIVE FEED MONITOR")
+    print("DISASTER NEWS LIVE FEED MONITOR (INDIA ONLY)")
     print("=" * 80)
     print(f"Flask API: {FLASK_API_URL}")
     print(f"Fetch Interval: {FETCH_INTERVAL} seconds ({FETCH_INTERVAL // 60} minutes)")
